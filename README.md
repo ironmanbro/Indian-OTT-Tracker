@@ -39,7 +39,14 @@ git add public/india_movies.json && git commit -m "Refresh data" && git push
 ```
 What it does: downloads TMDB's daily ID export → top 1,000 by popularity → TMDB details + India watch-providers + director → keeps only titles streaming in India → joins IMDb ratings (`title.ratings.tsv.gz`) → writes the JSON. Resumable (cache in `scripts/.cache/`). Use `--top 200` for a quick run, `--no-imdb` to skip ratings.
 
-> Ratings/director/providers only exist in the live catalog after you run the sync. Re-run it periodically (availability changes) and commit the file; Cloudflare redeploys automatically.
+> Ratings/director/providers only exist in the live catalog after the sync has run.
+
+### Automatic daily refresh (GitHub Action)
+`.github/workflows/sync-data.yml` runs the sync every day at 02:17 UTC and commits `public/india_movies.json` when the data changed; Cloudflare Pages then redeploys from that commit.
+1. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret** → name `TMDB_API_KEY` (this is separate from the Cloudflare secret).
+2. **Actions** tab → *Refresh data* → **Run workflow** to run it once now.
+
+Safeguards: the run fails (and commits nothing) if fewer than 50 movies come back or fewer than 30% have IMDb ratings. If the repo is quiet for 60 days GitHub pauses scheduled workflows — the daily data commits keep it active.
 
 ## Deploy to Cloudflare Pages
 1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git** → pick this repo.
