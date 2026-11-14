@@ -11,7 +11,8 @@
     "cf:dev": "wrangler dev",
     "cf:deploy": "wrangler deploy",
     "sync": "python3 scripts/sync_india_movies.py",
-    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name indian-ott-tracker"
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name indian-ott-tracker",
+    "posters": "python3 scripts/fetch_posters.py"
   },
   "engines": {
     "node": ">=22.12"

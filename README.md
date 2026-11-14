@@ -107,6 +107,17 @@ wrangler.toml · vite.config.js · tailwind.config.js · postcss.config.js · pa
 ## Posters
 Movies carry `poster_path`; the app builds `https://image.tmdb.org/t/p/w500/<poster_path>` (`src/lib/poster.js`; older `w342` URLs in a synced file are upgraded automatically). `<Poster/>` (`src/components/Poster.jsx`) renders a dark gradient + title-typography graphic underneath and fades the image in over it — if a movie has no poster, or the image fails to load, the graphic simply stays. The bundled mock movies have no TMDB poster paths, so they show the graphic. Posters appear on swipe cards (full-bleed, bottom gradient overlay), catalog cards, the graph hover tooltip, the detail drawer and the picker.
 
+### Getting real posters for the demo movies
+The bundled 25 movies ship without TMDB poster paths (they show the title graphic). Fill them in once:
+```bash
+pip install -r scripts/requirements.txt
+export TMDB_API_KEY=your_key
+npm run posters -- --dry-run      # preview matches (python3 scripts/fetch_posters.py --dry-run)
+npm run posters                   # writes poster_path / poster / imdb_id into src/data/india_movies_mock.json
+git add src/data && git commit -m "Add demo posters" && git push
+```
+Matching is exact (IMDb id → TMDB `/find`; else title + year ±1) — unmatched titles are listed and left alone; add `"imdb_id": "tt…"` to a movie and re-run to fix one. Other helpers: `--file public/india_movies.json`, `--force`, and `--imdb tt1375666 tt0169102` (prints poster URLs for IMDb ids). Posters are fetched from TMDB's CDN, not scraped from IMDb.
+
 ## Recommendation engine (`useMovieRecommender`)
 - **Features** per movie: genres ×3, themes (TMDB keywords) ×1.5, director ×2, language ×0.5 — multi-word values stay one token (so "Kiran Rao" ≠ "Rajkumar Rao"), weighted by IDF.
 - **Taste profile** = Σ rating-weight × movie vector: 5★ +2, 4★ +1, 3★ 0, 2★ −0.5, 1★ −1. Nothing is learned until you rate something 4–5★.
