@@ -104,6 +104,9 @@ scripts/sync_india_movies.py   TMDB + IMDb → public/india_movies.json
 wrangler.toml · vite.config.js · tailwind.config.js · postcss.config.js · package.json
 ```
 
+## Posters
+Movies carry `poster_path`; the app builds `https://image.tmdb.org/t/p/w500/<poster_path>` (`src/lib/poster.js`; older `w342` URLs in a synced file are upgraded automatically). `<Poster/>` (`src/components/Poster.jsx`) renders a dark gradient + title-typography graphic underneath and fades the image in over it — if a movie has no poster, or the image fails to load, the graphic simply stays. The bundled mock movies have no TMDB poster paths, so they show the graphic. Posters appear on swipe cards (full-bleed, bottom gradient overlay), catalog cards, the graph hover tooltip, the detail drawer and the picker.
+
 ## Recommendation engine (`useMovieRecommender`)
 - **Features** per movie: genres ×3, themes (TMDB keywords) ×1.5, director ×2, language ×0.5 — multi-word values stay one token (so "Kiran Rao" ≠ "Rajkumar Rao"), weighted by IDF.
 - **Taste profile** = Σ rating-weight × movie vector: 5★ +2, 4★ +1, 3★ 0, 2★ −0.5, 1★ −1. Nothing is learned until you rate something 4–5★.

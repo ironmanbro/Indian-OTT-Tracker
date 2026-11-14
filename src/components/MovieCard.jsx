@@ -1,6 +1,7 @@
 // Catalog card: poster + IMDb overlay, genres, OTT availability tags, watched/rating controls.
 import { memo } from 'react';
 import { Badges, StarRating } from './shared.jsx';
+import { Poster } from './Poster.jsx';
 import { fmtDuration } from '../lib/format.js';
 
 export const MovieCard = memo(function MovieCard({ movie, access, entry, onToggleWatched, onRate, onOpen }) {
@@ -12,8 +13,7 @@ export const MovieCard = memo(function MovieCard({ movie, access, entry, onToggl
       }`}
     >
       <button type="button" onClick={() => onOpen(movie.id)} className="relative shrink-0 overflow-hidden rounded-lg" aria-label={`Details for ${movie.title}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={movie.poster} alt={`${movie.title} poster`} className="h-32 w-[86px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+        <Poster movie={movie} size="sm" className="h-32 w-[86px] transition-transform duration-500 group-hover:scale-105" />
         {movie.imdb_rating ? (
           <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded bg-yellow-400 px-1 py-0.5 font-mono text-[11px] font-black leading-none text-black shadow-lg">
             <span className="text-[8px]">IMDb</span>{movie.imdb_rating.toFixed(1)}

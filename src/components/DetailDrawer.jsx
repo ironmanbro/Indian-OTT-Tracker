@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { StarRating } from './shared.jsx';
+import { Poster } from './Poster.jsx';
 import { providerLink } from '../lib/constants.js';
 import { fmtDuration } from '../lib/format.js';
 
@@ -40,8 +41,7 @@ export function DetailDrawer({ movie, access, entry, signal, onClose, onToggleWa
         </div>
 
         <div className="mt-4 flex gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={movie.poster} alt="" className="h-40 w-28 shrink-0 rounded-lg object-cover shadow-lg ring-1 ring-white/10" />
+          <Poster movie={movie} eager className="h-48 w-32 shrink-0 rounded-lg shadow-lg ring-1 ring-white/10" />
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-tight text-white">{movie.title}</h2>
             {movie.director && <p className="mt-1 text-xs text-slate-400">Dir. {movie.director}</p>}

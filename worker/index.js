@@ -51,7 +51,8 @@ export function toMovie(d) {
       flatrate: uniq(names(rp.flatrate)),
       free: uniq([...names(rp.free), ...names(rp.ads)]), // "free" and "free with ads" both count as free
     },
-    poster: d.poster_path ? `https://image.tmdb.org/t/p/w342${d.poster_path}` : null,
+    poster: d.poster_path ? `https://image.tmdb.org/t/p/w500${d.poster_path}` : null, // https://image.tmdb.org/t/p/w500/<poster_path>
+    poster_path: d.poster_path || null,
     year: d.release_date ? Number(d.release_date.slice(0, 4)) : null,
     language: d.original_language || null,
     themes: (d.keywords?.keywords || []).map((k) => k.name.trim().toLowerCase().replace(/\s+/g, '-')).slice(0, 8),

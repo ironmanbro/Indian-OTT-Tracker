@@ -1,5 +1,6 @@
 // "Pick my next movie": genre/time filters, ranked picks, Surprise me / Not in the mood.
 import { memo } from 'react';
+import { Poster } from './Poster.jsx';
 import { fmtDuration } from '../lib/format.js';
 import { RUNTIME_OPTIONS } from '../lib/recommend.js';
 
@@ -52,8 +53,7 @@ export const NextMoviePicker = memo(function NextMoviePicker({
 
       {picked && (
         <div className="ott-slide mt-4 flex items-center gap-4 rounded-xl border border-amber-400/50 bg-amber-400/10 p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={picked.movie.poster} alt="" className="h-24 w-16 rounded-md object-cover" />
+          <Poster movie={picked.movie} size="sm" className="h-28 w-[75px] shrink-0 rounded-md" />
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-300">Tonight&apos;s pick · {picked.pct}% match</p>
             <p className="truncate text-lg font-bold text-white">{picked.movie.title}</p>

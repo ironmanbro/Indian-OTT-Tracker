@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { Badges, ImdbBadge, Screen, Star } from './shared.jsx';
+import { Poster } from './Poster.jsx';
 import { getAccess } from '../lib/access.js';
 import { fmtDuration } from '../lib/format.js';
 
@@ -54,10 +55,15 @@ export function RatingPrompt({ movie, onRate, onCancel }) {
 }
 
 /* ── One swipeable card ── */
+const SPRING = { type: 'spring', stiffness: 260, damping: 26, mass: 0.9 };
 export const cardVariants = {
-  enter: { scale: 0.95, opacity: 0 },
-  center: { scale: 1, opacity: 1 },
-  exit: (d) => ({ x: d === 'right' ? 460 : -460, opacity: 0, transition: { duration: 0.28 } }),
+  center: { scale: 1, y: 0, transition: SPRING },
+  // x springs off-screen (rotation + stamps are derived from x); opacity eases out so the spring can't overshoot it
+  exit: (d) => ({
+    x: d === 'right' ? 520 : -520,
+    opacity: 0,
+    transition: { x: { type: 'spring', stiffness: 200, damping: 24, mass: 0.8 }, opacity: { duration: 0.3, ease: 'easeIn' } },
+  }),
 };
 
 export function SwipeCard({ movie, access, dir, onSwipe }) {
@@ -68,26 +74,33 @@ export function SwipeCard({ movie, access, dir, onSwipe }) {
 
   return (
     <motion.div
-      custom={dir} variants={cardVariants} initial="enter" animate="center" exit="exit"
+      custom={dir} variants={cardVariants}
+      initial={{ scale: 0.96, y: 10 }} // starts exactly where the card behind it sits, so promotion is seamless
+      animate="center" exit="exit"
       drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.85}
+      dragTransition={{ bounceStiffness: 420, bounceDamping: 28 }} // springs back if released short of the threshold
       style={{ x, rotate }}
       onDragEnd={(_, info) => {
         if (info.offset.x > 110 || info.velocity.x > 500) onSwipe('right');
         else if (info.offset.x < -110 || info.velocity.x < -500) onSwipe('left');
       }}
-      whileDrag={{ cursor: 'grabbing' }}
-      className="absolute inset-0 cursor-grab select-none overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 shadow-2xl"
+      whileDrag={{ cursor: 'grabbing', scale: 1.02 }}
+      className="absolute inset-0 cursor-grab select-none overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={movie.poster} alt={`${movie.title} poster`} draggable={false} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+      <Poster movie={movie} size="lg" eager align="center" className="absolute inset-0 h-full w-full" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
       <motion.div style={{ opacity: yes }} className="absolute left-4 top-5 -rotate-12 rounded-lg border-4 border-emerald-400 px-3 py-1 text-2xl font-black tracking-widest text-emerald-400">WATCHED</motion.div>
       <motion.div style={{ opacity: no }} className="absolute right-4 top-5 rotate-12 rounded-lg border-4 border-rose-400 px-3 py-1 text-2xl font-black tracking-widest text-rose-400">NOT SEEN</motion.div>
-      <div className="absolute inset-x-0 bottom-0 space-y-2 p-5">
-        <h2 className="text-2xl font-bold leading-tight text-white">{movie.title}</h2>
-        <p className="text-sm text-zinc-300">{fmtDuration(movie.runtime)} · {movie.genres.join(' · ')}</p>
-        <ImdbBadge movie={movie} />
-        <Badges access={access} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 space-y-2 p-5">
+        <h2 className="text-2xl font-bold leading-tight text-white drop-shadow">{movie.title}</h2>
+        <p className="text-sm text-slate-300">
+          {movie.year ? <span className="font-semibold text-white/90">{movie.year}</span> : null}
+          {movie.year ? ' · ' : ''}{fmtDuration(movie.runtime)} · {movie.genres.join(' · ')}
+        </p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <ImdbBadge movie={movie} />
+          <Badges access={access} />
+        </div>
       </div>
     </motion.div>
   );
@@ -166,14 +179,21 @@ export function OnboardingDeck({ deck, subs, log, setLog, onDone, onBack }) {
         {!finished ? (
           <>
             <p className="mt-4 text-center text-sm text-zinc-400">Seen it? Swipe right and rate it. Haven&apos;t? Swipe left.</p>
-            <div className="relative mx-auto mt-3 h-[460px] w-full">
+            <div className="relative mx-auto mt-3 h-[min(576px,62vh)] w-full">
               {/* depth cards behind the active one */}
               {deck.slice(index + 1, index + 3).map((mv, i) => (
-                <div
+                <motion.div
                   key={mv.id}
-                  className="absolute inset-0 rounded-3xl border border-white/10 bg-zinc-900"
-                  style={{ transform: `translateY(${(i + 1) * 10}px) scale(${1 - (i + 1) * 0.04})`, opacity: 0.7 - i * 0.25, zIndex: -i - 1 }}
-                />
+                  initial={false}
+                  animate={{ scale: 1 - (i + 1) * 0.04, y: (i + 1) * 10, opacity: 0.9 - i * 0.3 }}
+                  transition={SPRING}
+                  className="absolute inset-0 overflow-hidden rounded-3xl border border-white/10 bg-slate-900"
+                  style={{ zIndex: -i - 1 }}
+                >
+                  {/* the next posters peek out (dimmed) — and start loading before they're needed */}
+                  <Poster movie={mv} size="lg" align="center" className="h-full w-full" />
+                  <div className="absolute inset-0 bg-slate-950/60" />
+                </motion.div>
               ))}
               <AnimatePresence custom={dir} mode="popLayout">
                 <SwipeCard key={current.id} movie={current} access={getAccess(current, subs)} dir={dir} onSwipe={onSwipe} />

@@ -42,7 +42,7 @@ import requests
 IMDB_RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz"
 EXPORT_URL = "https://files.tmdb.org/p/exports/movie_ids_{date}.json.gz"
 API_BASE = "https://api.themoviedb.org/3"
-POSTER_BASE = "https://image.tmdb.org/t/p/w342"
+POSTER_BASE = "https://image.tmdb.org/t/p/w500"
 REGION = "IN"
 
 # TMDB provider names -> the app's subscription pill names. Unmatched names pass through.
@@ -181,7 +181,8 @@ def to_movie(d: dict):
         "genres": genres,
         "runtime": runtime,
         "platforms": {"flatrate": flatrate, "free": free},
-        "poster": f"{POSTER_BASE}{d['poster_path']}" if d.get("poster_path") else None,
+        "poster": f"{POSTER_BASE}{d['poster_path']}" if d.get("poster_path") else None,  # https://image.tmdb.org/t/p/w500/<poster_path>
+        "poster_path": d.get("poster_path") or None,
         "year": int(d["release_date"][:4]) if d.get("release_date") else None,
         "language": d.get("original_language"),
         # TMDB's /movie/{id} response carries the IMDb id; the rating is joined in later (attach_ratings)

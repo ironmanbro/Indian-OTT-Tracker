@@ -5,6 +5,10 @@
 //                   after every rating the layout is re-settled from the previous positions and the stars glide there
 //  • links        = shared genre (cyan) or same director (magenta)
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Poster } from './Poster.jsx';
+import { Badges, ImdbBadge } from './shared.jsx';
+import { fmtDuration } from '../lib/format.js';
 import { forceCollide, forceLink, forceManyBody, forceRadial, forceSimulation, forceX, forceY } from 'd3';
 
 const W = 820;
@@ -117,6 +121,10 @@ export const ConstellationGraph = memo(function ConstellationGraph({ movies, acc
     return t;
   }, [movies, links, similarity, log]);
   const pos = useTweenedPositions(target);
+  const byId = useMemo(() => new Map(movies.map((m) => [m.id, m])), [movies]);
+
+  // Hover / keyboard-focus tooltip: poster thumbnail + key facts, anchored to the star (flips below near the top edge)
+  const tip = hover && byId.get(hover) && pos.get(hover) ? { mv: byId.get(hover), p: pos.get(hover) } : null;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(ellipse_at_center,#0b1b3a_0%,#020617_72%)] shadow-[0_0_50px_-20px_rgba(34,211,238,.45)] before:pointer-events-none before:absolute before:inset-0 before:[background-image:linear-gradient(rgba(34,211,238,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.05)_1px,transparent_1px)] before:[background-size:34px_34px]">
@@ -182,6 +190,8 @@ export const ConstellationGraph = memo(function ConstellationGraph({ movies, acc
                 style={{ transition: 'opacity .3s', cursor: 'pointer', pointerEvents: visible ? 'auto' : 'none' }}
                 onMouseEnter={() => setHover(mv.id)}
                 onMouseLeave={() => setHover(null)}
+                onFocus={() => setHover(mv.id)}
+                onBlur={() => setHover(null)}
                 onClick={() => onSelect(mv.id)}
                 tabIndex={0}
                 role="button"
@@ -216,6 +226,45 @@ export const ConstellationGraph = memo(function ConstellationGraph({ movies, acc
           })}
         </g>
       </svg>
+
+      <AnimatePresence>
+        {tip && (
+          <div
+            key="tip-anchor"
+            className="pointer-events-none absolute z-20"
+            style={{
+              left: `${Math.min(86, Math.max(14, (tip.p.x / W) * 100))}%`,
+              top: `${(tip.p.y / H) * 100}%`,
+              transform: tip.p.y < H * 0.42 ? 'translate(-50%, 22px)' : 'translate(-50%, calc(-100% - 22px))',
+            }}
+          >
+            <motion.div
+              key={tip.mv.id}
+              initial={{ opacity: 0, scale: 0.94, y: tip.p.y < H * 0.42 ? -6 : 6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.12 } }}
+              transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+              role="tooltip"
+              className="flex w-64 gap-2.5 rounded-xl border border-cyan-400/30 bg-slate-950/90 p-2.5 shadow-[0_0_30px_-8px_rgba(34,211,238,.6)] backdrop-blur-xl"
+            >
+              <Poster movie={tip.mv} size="sm" eager className="h-[96px] w-16 shrink-0 rounded-md ring-1 ring-white/10" />
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="truncate text-sm font-semibold text-white">{tip.mv.title}</p>
+                <p className="font-mono text-[10px] text-slate-400">
+                  {tip.mv.year ? `${tip.mv.year} · ` : ''}{fmtDuration(tip.mv.runtime)}
+                </p>
+                <ImdbBadge movie={tip.mv} />
+                <Badges access={accessMap.get(tip.mv.id)} />
+                <p className="font-mono text-[10px] text-cyan-300/80">
+                  {log[tip.mv.id]?.watched
+                    ? `Your rating: ${'★'.repeat(log[tip.mv.id].rating || 0) || 'not rated'}`
+                    : `${Math.round((similarity.get(tip.mv.id) ?? 0.5) * 100)}% taste match · click for details`}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="pointer-events-none absolute bottom-2 left-3 right-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-slate-400">
         <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />on sub / free</span>
