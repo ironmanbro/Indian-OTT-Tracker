@@ -12,7 +12,7 @@ Track the movies you've watched, see what your **Indian streaming subscriptions 
 - Profile is saved in the browser (`localStorage`) — no accounts, no backend state.
 
 ## Stack
-React 18 · Vite · Tailwind CSS 3 · Framer Motion · D3 · Cloudflare Pages (+ one Pages Function)
+React 18 · Vite · Tailwind CSS 3 · Framer Motion · D3 · Cloudflare Workers (static assets + one API route)
 
 ## Run locally
 ```bash
@@ -22,11 +22,11 @@ npm run dev            # http://localhost:5173 — runs on built-in demo data
 To also test the live-data function locally:
 ```bash
 cp .dev.vars.example .dev.vars     # put your TMDB key in .dev.vars (gitignored)
-npm run cf:dev                     # http://localhost:8788 — static site + /api/movies
+npm run cf:dev                     # wrangler dev — static site + /api/movies on http://localhost:8787
 ```
 
 ## Data: three layers (the app tries them in order)
-1. **`/api/movies`** — Cloudflare Pages Function (`functions/api/movies.js`). Live top-24 India catalog from TMDB, cached 24h at the edge. Needs the `TMDB_API_KEY` secret.
+1. **`/api/movies`** — handled by the Worker (`worker/index.js`). Live top-24 India catalog from TMDB, cached 24h at the edge. Needs the `TMDB_API_KEY` secret.
 2. **`/india_movies.json`** — static file in `public/`, produced by the sync script (up to 1,000 movies **with IMDb ratings**).
 3. **Built-in demo catalog** (25 movies, `src/App.jsx`) — always works. Its availability is illustrative and its IMDb ratings are approximate samples.
 
@@ -42,21 +42,20 @@ What it does: downloads TMDB's daily ID export → top 1,000 by popularity → T
 > Ratings/director/providers only exist in the live catalog after the sync has run.
 
 ### Automatic daily refresh (GitHub Action)
-`.github/workflows/sync-data.yml` runs the sync every day at 02:17 UTC and commits `public/india_movies.json` when the data changed; Cloudflare Pages then redeploys from that commit.
+`.github/workflows/sync-data.yml` runs the sync every day at 02:17 UTC and commits `public/india_movies.json` when the data changed; Cloudflare then redeploys from that commit.
 1. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret** → name `TMDB_API_KEY` (this is separate from the Cloudflare secret).
 2. **Actions** tab → *Refresh data* → **Run workflow** to run it once now.
 
 Safeguards: the run fails (and commits nothing) if fewer than 50 movies come back or fewer than 30% have IMDb ratings. If the repo is quiet for 60 days GitHub pauses scheduled workflows — the daily data commits keep it active.
 
-## Deploy to Cloudflare Pages
-1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git** → pick this repo.
-2. Build settings:
-   - **Framework preset:** Vite (or None)
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - Environment variable `NODE_VERSION` = `20` (optional; `.node-version` is also included)
-3. **Settings → Variables and Secrets** → add secret **`TMDB_API_KEY`** (Production, and Preview if you want). Optional — without it the site uses `/india_movies.json` or the demo data.
-4. Deploy. The Pages Function in `functions/` is picked up automatically.
+## Deploy to Cloudflare (Workers + static assets)
+1. Cloudflare dashboard → **Workers & Pages → Create → Import a repository** → pick this repo.
+2. Settings (defaults work):
+   - **Build command:** leave empty — `wrangler deploy` runs `npm run build` itself (see `[build]` in `wrangler.toml`)
+   - **Deploy command:** `npx wrangler deploy`
+   - The project name in Cloudflare must match `name` in `wrangler.toml` (`indian-ott-tracker`) — change one to match the other if they differ.
+3. **Settings → Variables and Secrets** → add secret **`TMDB_API_KEY`**. Optional — without it the site uses `/india_movies.json` or the demo data.
+4. Push to `main` → Cloudflare builds and deploys.
 
 CLI alternative: `npx wrangler login && npm run cf:deploy`.
 
@@ -68,8 +67,8 @@ CLI alternative: `npx wrangler login && npm run cf:deploy`.
 ## Project layout
 ```
 src/App.jsx                    the whole app (onboarding, dashboard, constellation)
-functions/api/movies.js        Cloudflare Pages Function: live TMDB catalog
+worker/index.js                Cloudflare Worker: serves dist/ + live TMDB catalog at /api/movies
 scripts/sync_india_movies.py   TMDB + IMDb → public/india_movies.json
 public/                        static files (india_movies.json goes here)
-wrangler.toml                  Pages config (no secrets)
+wrangler.toml                  Workers config: build step + assets (no secrets)
 ```

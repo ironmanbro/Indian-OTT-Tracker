@@ -1,7 +1,8 @@
 /**
- * Cloudflare Pages Function → GET /api/movies
+ * Cloudflare Worker (static assets + API) → GET /api/movies
+ * Everything else is served from ./dist by the assets binding.
  * Live India catalog from TMDB (popular titles streaming in IN, with providers, runtime, genres,
- * director and imdb_id). The key stays server-side: set TMDB_API_KEY as a Pages secret.
+ * director and imdb_id). The key stays server-side: set TMDB_API_KEY as a Worker secret.
  *
  * - If the key is missing or TMDB fails, returns 503 and the app falls back to /india_movies.json,
  *   then to the built-in demo data.
@@ -81,7 +82,7 @@ async function fetchCatalog(env) {
     .filter((m) => m.runtime > 0 && m.genres.length && (m.platforms.flatrate.length || m.platforms.free.length));
 }
 
-export async function onRequestGet({ env, request, waitUntil }) {
+async function handleMovies(request, env, ctx) {
   const edge = typeof caches !== 'undefined' ? caches.default : null;
   const cacheKey = new Request(new URL('/api/movies', request.url).toString());
   if (edge) {
@@ -91,9 +92,17 @@ export async function onRequestGet({ env, request, waitUntil }) {
   try {
     const movies = await fetchCatalog(env);
     const res = Response.json({ movies }, { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
-    if (edge && waitUntil) waitUntil(edge.put(cacheKey, res.clone()));
+    if (edge && ctx) ctx.waitUntil(edge.put(cacheKey, res.clone()));
     return res;
   } catch {
     return Response.json({ error: 'catalog_unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
 }
+
+export default {
+  async fetch(request, env, ctx) {
+    const { pathname } = new URL(request.url);
+    if (pathname === '/api/movies' && request.method === 'GET') return handleMovies(request, env, ctx);
+    return env.ASSETS.fetch(request); // static site (dist/); unknown paths → real 404
+  },
+};

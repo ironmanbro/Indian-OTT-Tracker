@@ -1,5 +1,15 @@
-# Cloudflare Pages config. Secrets (TMDB_API_KEY) are NOT stored here — set them in the dashboard
-# (Settings → Variables and Secrets) or locally in .dev.vars.
+# Cloudflare Workers (static assets + API). Deploy with:  npx wrangler deploy
+# The Worker name must match your Cloudflare project name (Workers & Pages → project name).
 name = "indian-ott-tracker"
-pages_build_output_dir = "dist"
+main = "worker/index.js"
 compatibility_date = "2025-01-01"
+
+# `wrangler deploy` builds the site first, so no separate build command is needed in the dashboard.
+[build]
+command = "npm run build"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Secrets (TMDB_API_KEY) are NOT stored here: Settings → Variables and Secrets, or .dev.vars locally.
