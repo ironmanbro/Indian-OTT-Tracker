@@ -1,0 +1,5 @@
+# Cloudflare Pages config. Secrets (TMDB_API_KEY) are NOT stored here — set them in the dashboard
+# (Settings → Variables and Secrets) or locally in .dev.vars.
+name = "indian-ott-tracker"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-01-01"
