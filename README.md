@@ -53,6 +53,7 @@ Safeguards: the run fails (and commits nothing) if fewer than 50 movies come bac
 2. Settings (defaults work):
    - **Build command:** leave empty — `wrangler deploy` runs `npm run build` itself (see `[build]` in `wrangler.toml`)
    - **Deploy command:** `npx wrangler deploy`
+   - **Node:** taken from `.node-version` (22) — wrangler 4 needs Node ≥ 22.12, so don't override it with an older `NODE_VERSION`
    - The project name in Cloudflare must match `name` in `wrangler.toml` (`indian-ott-tracker`) — change one to match the other if they differ.
 3. **Settings → Variables and Secrets** → add secret **`TMDB_API_KEY`**. Optional — without it the site uses `/india_movies.json` or the demo data.
 4. Push to `main` → Cloudflare builds and deploys.
