@@ -54,6 +54,7 @@ export function toMovie(d) {
     poster: d.poster_path ? `https://image.tmdb.org/t/p/w342${d.poster_path}` : null,
     year: d.release_date ? Number(d.release_date.slice(0, 4)) : null,
     language: d.original_language || null,
+    themes: (d.keywords?.keywords || []).map((k) => k.name.trim().toLowerCase().replace(/\s+/g, '-')).slice(0, 8),
     director: (d.credits?.crew || []).filter((c) => c.job === 'Director').map((c) => c.name).join(', ').slice(0, 80) || null,
     imdb_id: d.imdb_id || null,
   };
@@ -74,7 +75,7 @@ async function fetchCatalog(env) {
   );
   const ids = uniq(pages.flatMap((p) => p.results.map((r) => r.id))).slice(0, COUNT);
   const details = await Promise.all(
-    ids.map((id) => tmdb(env, `/movie/${id}`, { append_to_response: 'watch/providers,credits', language: 'en-US' }).catch(() => null)),
+    ids.map((id) => tmdb(env, `/movie/${id}`, { append_to_response: 'watch/providers,credits,keywords', language: 'en-US' }).catch(() => null)),
   );
   return details
     .filter(Boolean)

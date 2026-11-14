@@ -135,7 +135,7 @@ class Tmdb:
         """Returns the JSON dict, or None for 404. Retries on 429/5xx/network errors."""
         # Note: the region filter is applied client-side below — watch/providers returns every
         # country under results.<CC>, so we read results["IN"] rather than rely on a query param.
-        params = {**self.params, "append_to_response": "watch/providers,credits", "language": "en-US"}
+        params = {**self.params, "append_to_response": "watch/providers,credits,keywords", "language": "en-US"}
         for attempt in range(retries):
             try:
                 r = self.s.get(f"{API_BASE}/movie/{movie_id}", params=params, timeout=30)
@@ -185,6 +185,8 @@ def to_movie(d: dict):
         "year": int(d["release_date"][:4]) if d.get("release_date") else None,
         "language": d.get("original_language"),
         # TMDB's /movie/{id} response carries the IMDb id; the rating is joined in later (attach_ratings)
+        # TMDB keywords → themes (e.g. "folk-horror", "small-town"); feeds the recommender's theme features
+        "themes": [re.sub(r"\s+", "-", k["name"].strip().lower()) for k in (d.get("keywords") or {}).get("keywords", [])][:8],
         "director": ", ".join(c["name"] for c in (d.get("credits") or {}).get("crew", []) if c.get("job") == "Director")[:80] or None,
         "imdb_id": d.get("imdb_id") or None,
         "imdb_rating": None,
@@ -201,7 +203,7 @@ def enrich(ids, client: Tmdb, cache_path: str):
                 try:
                     rec = json.loads(line)
                     mv = rec["movie"]
-                    if mv is not None and ("imdb_id" not in mv or "director" not in mv):
+                    if mv is not None and ("imdb_id" not in mv or "director" not in mv or "themes" not in mv):
                         continue  # cached before IMDb/director support → refetch
                     done[rec["id"]] = mv  # movie may be null (= checked, no IN data)
                 except (json.JSONDecodeError, KeyError):

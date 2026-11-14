@@ -1,0 +1,745 @@
+[
+  {
+    "id": "1",
+    "title": "RRR",
+    "genres": [
+      "Action",
+      "Drama",
+      "Period"
+    ],
+    "themes": [
+      "revolution",
+      "friendship",
+      "british-raj",
+      "epic"
+    ],
+    "runtime": 187,
+    "year": 2022,
+    "language": "te",
+    "director": "S. S. Rajamouli",
+    "platforms": {
+      "flatrate": [
+        "Netflix",
+        "Zee5"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 10,
+    "imdb_rating": 7.8,
+    "imdb_votes": null
+  },
+  {
+    "id": "2",
+    "title": "3 Idiots",
+    "genres": [
+      "Comedy",
+      "Drama"
+    ],
+    "themes": [
+      "education",
+      "friendship",
+      "college",
+      "satire"
+    ],
+    "runtime": 170,
+    "year": 2009,
+    "language": "hi",
+    "director": "Rajkumar Hirani",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": [
+        "YouTube"
+      ]
+    },
+    "poster": null,
+    "hue": 200,
+    "imdb_rating": 8.4,
+    "imdb_votes": null
+  },
+  {
+    "id": "3",
+    "title": "Dangal",
+    "genres": [
+      "Drama",
+      "Sports",
+      "Biopic"
+    ],
+    "themes": [
+      "wrestling",
+      "father-daughter",
+      "underdog",
+      "true-story"
+    ],
+    "runtime": 161,
+    "year": 2016,
+    "language": "hi",
+    "director": "Nitesh Tiwari",
+    "platforms": {
+      "flatrate": [
+        "Netflix",
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 30,
+    "imdb_rating": 8.3,
+    "imdb_votes": null
+  },
+  {
+    "id": "4",
+    "title": "Gully Boy",
+    "genres": [
+      "Drama",
+      "Music"
+    ],
+    "themes": [
+      "rap",
+      "slum",
+      "ambition",
+      "underdog"
+    ],
+    "runtime": 153,
+    "year": 2019,
+    "language": "hi",
+    "director": "Zoya Akhtar",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": [
+        "MX Player"
+      ]
+    },
+    "poster": null,
+    "hue": 280,
+    "imdb_rating": 7.9,
+    "imdb_votes": null
+  },
+  {
+    "id": "5",
+    "title": "Drishyam",
+    "genres": [
+      "Thriller",
+      "Crime",
+      "Drama"
+    ],
+    "themes": [
+      "family",
+      "cover-up",
+      "police",
+      "suspense"
+    ],
+    "runtime": 163,
+    "year": 2015,
+    "language": "hi",
+    "director": "Nishikant Kamat",
+    "platforms": {
+      "flatrate": [
+        "JioHotstar"
+      ],
+      "free": [
+        "JioCinema"
+      ]
+    },
+    "poster": null,
+    "hue": 160,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "6",
+    "title": "Andhadhun",
+    "genres": [
+      "Thriller",
+      "Comedy",
+      "Crime"
+    ],
+    "themes": [
+      "black-comedy",
+      "piano",
+      "twist",
+      "murder"
+    ],
+    "runtime": 139,
+    "year": 2018,
+    "language": "hi",
+    "director": "Sriram Raghavan",
+    "platforms": {
+      "flatrate": [
+        "Netflix",
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 340,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "7",
+    "title": "Kantara",
+    "genres": [
+      "Action",
+      "Thriller",
+      "Folk"
+    ],
+    "themes": [
+      "folk",
+      "forest",
+      "deity",
+      "land-dispute"
+    ],
+    "runtime": 148,
+    "year": 2022,
+    "language": "kn",
+    "director": "Rishab Shetty",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 40,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "8",
+    "title": "Lagaan",
+    "genres": [
+      "Drama",
+      "Sports",
+      "Period"
+    ],
+    "themes": [
+      "cricket",
+      "colonial",
+      "village",
+      "underdog"
+    ],
+    "runtime": 224,
+    "year": 2001,
+    "language": "hi",
+    "director": "Ashutosh Gowariker",
+    "platforms": {
+      "flatrate": [
+        "Netflix"
+      ],
+      "free": [
+        "YouTube"
+      ]
+    },
+    "poster": null,
+    "hue": 90,
+    "imdb_rating": 8.1,
+    "imdb_votes": null
+  },
+  {
+    "id": "9",
+    "title": "Laapataa Ladies",
+    "genres": [
+      "Comedy",
+      "Drama"
+    ],
+    "themes": [
+      "rural",
+      "women",
+      "train",
+      "satire"
+    ],
+    "runtime": 124,
+    "year": 2024,
+    "language": "hi",
+    "director": "Kiran Rao",
+    "platforms": {
+      "flatrate": [
+        "Netflix"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 220,
+    "imdb_rating": 8.0,
+    "imdb_votes": null
+  },
+  {
+    "id": "10",
+    "title": "Bramayugam",
+    "genres": [
+      "Horror",
+      "Mystery",
+      "Folk"
+    ],
+    "themes": [
+      "folklore",
+      "black-and-white",
+      "kerala",
+      "mystery"
+    ],
+    "runtime": 139,
+    "year": 2024,
+    "language": "ml",
+    "director": "Rahul Sadasivan",
+    "platforms": {
+      "flatrate": [
+        "SonyLIV"
+      ],
+      "free": [
+        "MX Player"
+      ]
+    },
+    "poster": null,
+    "hue": 130,
+    "imdb_rating": 8.0,
+    "imdb_votes": null
+  },
+  {
+    "id": "11",
+    "title": "Stree 2",
+    "genres": [
+      "Comedy",
+      "Horror"
+    ],
+    "themes": [
+      "ghost",
+      "small-town",
+      "folk",
+      "sequel"
+    ],
+    "runtime": 149,
+    "year": 2024,
+    "language": "hi",
+    "director": "Amar Kaushik",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video",
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 20,
+    "imdb_rating": 7.6,
+    "imdb_votes": null
+  },
+  {
+    "id": "12",
+    "title": "Jawan",
+    "genres": [
+      "Action",
+      "Thriller"
+    ],
+    "themes": [
+      "vigilante",
+      "corruption",
+      "revenge",
+      "masala"
+    ],
+    "runtime": 169,
+    "year": 2023,
+    "language": "hi",
+    "director": "Atlee",
+    "platforms": {
+      "flatrate": [
+        "Netflix",
+        "Zee5"
+      ],
+      "free": [
+        "JioCinema"
+      ]
+    },
+    "poster": null,
+    "hue": 350,
+    "imdb_rating": 7.0,
+    "imdb_votes": null
+  },
+  {
+    "id": "13",
+    "title": "Zindagi Na Milegi Dobara",
+    "genres": [
+      "Comedy",
+      "Drama",
+      "Romance"
+    ],
+    "themes": [
+      "road-trip",
+      "friendship",
+      "self-discovery",
+      "spain"
+    ],
+    "runtime": 155,
+    "year": 2011,
+    "language": "hi",
+    "director": "Zoya Akhtar",
+    "platforms": {
+      "flatrate": [
+        "Netflix"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 190,
+    "imdb_rating": 8.1,
+    "imdb_votes": null
+  },
+  {
+    "id": "14",
+    "title": "Queen",
+    "genres": [
+      "Comedy",
+      "Drama",
+      "Romance"
+    ],
+    "themes": [
+      "solo-travel",
+      "self-discovery",
+      "women",
+      "honeymoon"
+    ],
+    "runtime": 146,
+    "year": 2014,
+    "language": "hi",
+    "director": "Vikas Bahl",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": [
+        "YouTube"
+      ]
+    },
+    "poster": null,
+    "hue": 320,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "15",
+    "title": "Tumbbad",
+    "genres": [
+      "Horror",
+      "Fantasy",
+      "Folk"
+    ],
+    "themes": [
+      "folk",
+      "greed",
+      "curse",
+      "mythology"
+    ],
+    "runtime": 104,
+    "year": 2018,
+    "language": "hi",
+    "director": "Rahi Anil Barve",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 150,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "16",
+    "title": "Stree",
+    "genres": [
+      "Horror",
+      "Comedy"
+    ],
+    "themes": [
+      "ghost",
+      "small-town",
+      "folk",
+      "satire"
+    ],
+    "runtime": 128,
+    "year": 2018,
+    "language": "hi",
+    "director": "Amar Kaushik",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video",
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 300,
+    "imdb_rating": 7.5,
+    "imdb_votes": null
+  },
+  {
+    "id": "17",
+    "title": "Baahubali: The Beginning",
+    "genres": [
+      "Action",
+      "Fantasy",
+      "Period"
+    ],
+    "themes": [
+      "epic",
+      "kingdom",
+      "revenge",
+      "warrior"
+    ],
+    "runtime": 159,
+    "year": 2015,
+    "language": "te",
+    "director": "S. S. Rajamouli",
+    "platforms": {
+      "flatrate": [
+        "Netflix",
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 60,
+    "imdb_rating": 8.0,
+    "imdb_votes": null
+  },
+  {
+    "id": "18",
+    "title": "Pather Panchali",
+    "genres": [
+      "Drama",
+      "Classic"
+    ],
+    "themes": [
+      "poverty",
+      "village",
+      "childhood",
+      "bengal"
+    ],
+    "runtime": 125,
+    "year": 1955,
+    "language": "bn",
+    "director": "Satyajit Ray",
+    "platforms": {
+      "flatrate": [],
+      "free": [
+        "YouTube"
+      ]
+    },
+    "poster": null,
+    "hue": 70,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "19",
+    "title": "Kahaani",
+    "genres": [
+      "Thriller",
+      "Mystery"
+    ],
+    "themes": [
+      "missing-person",
+      "kolkata",
+      "twist",
+      "pregnancy"
+    ],
+    "runtime": 122,
+    "year": 2012,
+    "language": "hi",
+    "director": "Sujoy Ghosh",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": [
+        "MX Player"
+      ]
+    },
+    "poster": null,
+    "hue": 250,
+    "imdb_rating": 8.1,
+    "imdb_votes": null
+  },
+  {
+    "id": "20",
+    "title": "Bajrangi Bhaijaan",
+    "genres": [
+      "Drama",
+      "Comedy"
+    ],
+    "themes": [
+      "border",
+      "friendship",
+      "child",
+      "pakistan"
+    ],
+    "runtime": 163,
+    "year": 2015,
+    "language": "hi",
+    "director": "Kabir Khan",
+    "platforms": {
+      "flatrate": [
+        "Zee5",
+        "Netflix"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 120,
+    "imdb_rating": 8.1,
+    "imdb_votes": null
+  },
+  {
+    "id": "21",
+    "title": "Super Deluxe",
+    "genres": [
+      "Comedy",
+      "Crime",
+      "Drama"
+    ],
+    "themes": [
+      "anthology",
+      "dark-comedy",
+      "transgender",
+      "chennai"
+    ],
+    "runtime": 176,
+    "year": 2019,
+    "language": "ta",
+    "director": "Thiagarajan Kumararaja",
+    "platforms": {
+      "flatrate": [
+        "SonyLIV"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 310,
+    "imdb_rating": 8.4,
+    "imdb_votes": null
+  },
+  {
+    "id": "22",
+    "title": "Manjummel Boys",
+    "genres": [
+      "Thriller",
+      "Adventure"
+    ],
+    "themes": [
+      "survival",
+      "friendship",
+      "cave",
+      "true-story"
+    ],
+    "runtime": 135,
+    "year": 2024,
+    "language": "ml",
+    "director": "Chidambaram",
+    "platforms": {
+      "flatrate": [
+        "JioHotstar"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 170,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "23",
+    "title": "Bhool Bhulaiyaa 3",
+    "genres": [
+      "Comedy",
+      "Horror"
+    ],
+    "themes": [
+      "ghost",
+      "palace",
+      "sequel",
+      "spooky"
+    ],
+    "runtime": 158,
+    "year": 2024,
+    "language": "hi",
+    "director": "Anees Bazmee",
+    "platforms": {
+      "flatrate": [
+        "Netflix"
+      ],
+      "free": [
+        "JioCinema"
+      ]
+    },
+    "poster": null,
+    "hue": 230,
+    "imdb_rating": 5.9,
+    "imdb_votes": null
+  },
+  {
+    "id": "24",
+    "title": "Gangs of Wasseypur",
+    "genres": [
+      "Crime",
+      "Action",
+      "Drama"
+    ],
+    "themes": [
+      "gangster",
+      "coal-mafia",
+      "revenge",
+      "dhanbad"
+    ],
+    "runtime": 160,
+    "year": 2012,
+    "language": "hi",
+    "director": "Anurag Kashyap",
+    "platforms": {
+      "flatrate": [
+        "Zee5",
+        "Amazon Prime Video"
+      ],
+      "free": [
+        "MX Player"
+      ]
+    },
+    "poster": null,
+    "hue": 5,
+    "imdb_rating": 8.2,
+    "imdb_votes": null
+  },
+  {
+    "id": "25",
+    "title": "Pushpa: The Rise",
+    "genres": [
+      "Action",
+      "Crime",
+      "Drama"
+    ],
+    "themes": [
+      "smuggling",
+      "underdog",
+      "forest",
+      "rise"
+    ],
+    "runtime": 179,
+    "year": 2021,
+    "language": "te",
+    "director": "Sukumar",
+    "platforms": {
+      "flatrate": [
+        "Amazon Prime Video"
+      ],
+      "free": []
+    },
+    "poster": null,
+    "hue": 100,
+    "imdb_rating": 7.6,
+    "imdb_votes": null
+  }
+]

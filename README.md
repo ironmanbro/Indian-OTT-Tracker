@@ -60,6 +60,20 @@ Safeguards: the run fails (and commits nothing) if fewer than 50 movies come bac
 
 CLI alternative: `npx wrangler login && npm run cf:deploy`.
 
+**Cloudflare Pages instead?** `wrangler pages deploy` publishes the static site only (the Worker's `/api/movies` route isn't included, so the app uses `/india_movies.json`, then the bundled mock data):
+```bash
+npx wrangler login
+npm run deploy:pages      # = npm run build && wrangler pages deploy dist --project-name indian-ott-tracker
+```
+For Git-connected Pages: build command `npm run build`, output directory `dist`, Node 22.
+
+**First-time git setup** (from scratch):
+```bash
+git init -b main && git add -A && git commit -m "Initial commit"
+git remote add origin https://github.com/<you>/<repo>.git
+git push -u origin main
+```
+
 ## Legal / attribution (read before going public or commercial)
 - **TMDB**: free API tier is for **non-commercial** use; commercial use needs a written agreement with TMDB. Credit TMDB and **JustWatch** (watch-provider data). The app footer already includes the required notice: *"This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch."*
 - **IMDb**: ratings come from IMDb's free *non-commercial* datasets — personal/non-commercial use only; check their current terms and attribution wording.
@@ -67,9 +81,33 @@ CLI alternative: `npx wrangler login && npm run cf:deploy`.
 
 ## Project layout
 ```
-src/App.jsx                    the whole app (onboarding, dashboard, constellation)
+src/
+├─ main.jsx · index.css
+├─ App.jsx                     root: catalog + saved profile + stage machine (loading → subs → swipe → dash)
+├─ components/
+│  ├─ SubsStep.jsx             onboarding step 1: subscription matrix
+│  ├─ OnboardingDeck.jsx       onboarding step 2: 25-card swipe deck + star-rating modal
+│  ├─ Dashboard.jsx            container: filters, picker, drawer state, derived data
+│  ├─ DashboardHUD.jsx         header + subscription pills, ticker, watch-time HUD tiles, smart filter bar
+│  ├─ ConstellationGraph.jsx   D3 force graph (size = IMDb + rating; brightness/proximity = taste match)
+│  ├─ MovieCard.jsx · DetailDrawer.jsx · NextMoviePicker.jsx · ProfilePanel.jsx
+│  └─ shared.jsx               stars, IMDb chip, OTT availability tags (<Badges/>), full-screen wrapper
+├─ hooks/
+│  ├─ useMovieRecommender.js   TF-IDF / cosine taste engine as a hook (reads the log from localStorage)
+│  └─ useCatalog.js            /api/movies → /india_movies.json → bundled mock data
+├─ lib/
+│  ├─ recommender.js           pure TF-IDF + cosine-similarity engine (no React)
+│  ├─ recommend.js             "Pick my next movie" ranking · constants.js · access.js · deck.js · format.js · poster.js
+└─ data/india_movies_mock.json 25 Indian movies (themes, director, approx. IMDb scores, illustrative OTT providers)
 worker/index.js                Cloudflare Worker: serves dist/ + live TMDB catalog at /api/movies
 scripts/sync_india_movies.py   TMDB + IMDb → public/india_movies.json
-public/                        static files (india_movies.json goes here)
-wrangler.toml                  Workers config: build step + assets (no secrets)
+wrangler.toml · vite.config.js · tailwind.config.js · postcss.config.js · package.json
 ```
+
+## Recommendation engine (`useMovieRecommender`)
+- **Features** per movie: genres ×3, themes (TMDB keywords) ×1.5, director ×2, language ×0.5 — multi-word values stay one token (so "Kiran Rao" ≠ "Rajkumar Rao"), weighted by IDF.
+- **Taste profile** = Σ rating-weight × movie vector: 5★ +2, 4★ +1, 3★ 0, 2★ −0.5, 1★ −1. Nothing is learned until you rate something 4–5★.
+- **Score** = cosine(profile, movie). Unwatched movies are ranked by it; `similarity` (0..1) drives the graph:
+  *brightness* (opacity + glow) and *proximity* (a radial force pulls your best matches toward the centre; after each rating the layout re-settles and the stars glide).
+- The hook reads the watch log from `localStorage` (`useMovieRecommender(movies)`), or takes the live log (`useMovieRecommender(movies, log)`, what the dashboard does) and stays in sync via the `storage` event and `cineterminal:log`.
+
