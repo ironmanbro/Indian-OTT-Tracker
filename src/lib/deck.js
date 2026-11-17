@@ -5,7 +5,7 @@ import { DECK_SIZE } from './constants.js';
  * Genre-diverse onboarding deck.
  * A live catalog is sorted by popularity, so slice(0, 25) would be mostly Action/Drama. Instead we
  * greedily pick from the 150 most popular titles, scoring each candidate by
- *   45% popularity (rank in the file)  +  45% genre novelty  +  10% language novelty
+ *   40% popularity (rank in the file)  +  40% genre novelty  +  20% language novelty (mixes Hollywood + Bollywood)
  * where novelty = how rarely its genres / language are already in the deck. A soft cap (30% of the deck
  * per genre) stops any one genre from dominating. Deterministic; same catalog → same deck.
  */
@@ -31,7 +31,7 @@ export function pickDiverseDeck(movies, size = DECK_SIZE, poolSize = 150) {
       const novelty = mv.genres.reduce((t, g) => t + 1 / (1 + (genreCount[g] || 0)), 0) / mv.genres.length;
       const langNovelty = 1 / (1 + (langCount[mv.language || '?'] || 0));
       const overCap = mv.genres.some((g) => (genreCount[g] || 0) >= cap) ? 1 : 0;
-      const score = 0.45 * pop + 0.45 * novelty + 0.1 * langNovelty - overCap;
+      const score = 0.4 * pop + 0.4 * novelty + 0.2 * langNovelty - overCap;
       if (score > bestScore) { bestScore = score; best = i; }
     }
     const [{ mv }] = left.splice(best, 1);

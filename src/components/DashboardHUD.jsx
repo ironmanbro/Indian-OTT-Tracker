@@ -50,13 +50,15 @@ export const HudStat = memo(function HudStat({ label, value, format, sub, tone =
 });
 
 /** Watch-time accumulator + stats: movies watched, cumulative time (e.g. "142h 30m"), average rating, accessible now. */
-export function HudStats({ stats, total, accessible }) {
+export function HudStats({ stats, total, accessible, availability = true }) {
   return (
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Watch statistics">
       <HudStat label="Movies Watched" value={stats.count} sub={`of ${total} in catalog`} tone="cyan" icon={Film} />
       <HudStat label="Cumulative Watch Time" value={stats.minutes} format={fmtDuration} sub={`${stats.minutes.toLocaleString('en-IN')} min logged`} tone="fuchsia" icon={Clock} />
       <HudStat label="Avg. Rating Given" value={stats.avg} sub="out of 5 ★" tone="amber" icon={Star} />
-      <HudStat label="Accessible Now" value={accessible} sub="on your subs or free" tone="emerald" icon={Tv} />
+      {availability
+        ? <HudStat label="Accessible Now" value={accessible} sub="on your subs or free" tone="emerald" icon={Tv} />
+        : <HudStat label="Still To Watch" value={Math.max(0, total - stats.count)} sub="movies not yet logged" tone="emerald" icon={Tv} />}
     </section>
   );
 }
@@ -66,16 +68,16 @@ const toggleBtn = (on, tone) =>
     on ? tone : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/30 hover:text-slate-200'
   }`;
 
-function Ticker({ ticker }) {
+function Ticker({ ticker, availability = true }) {
   return (
     <div className="overflow-hidden border-t border-white/5 bg-black/30 py-1 font-mono text-[11px]" aria-hidden="true">
       <div className="ott-marquee flex w-max gap-8 whitespace-nowrap">
         {[0, 1].map((dup) => (
           <div key={dup} className="flex gap-8">
-            <span className="text-emerald-300">▲ ACCESSIBLE {ticker.accessible}</span>
-            <span className="text-sky-300">◆ FREE IN INDIA {ticker.free}</span>
+            {availability && <span className="text-emerald-300">▲ ACCESSIBLE {ticker.accessible}</span>}
+            {availability && <span className="text-sky-300">◆ FREE IN INDIA {ticker.free}</span>}
             <span className="text-yellow-300">★ IMDb 8.0+ {ticker.top}</span>
-            <span className="text-fuchsia-300">⏱ ON-SUB BACKLOG {fmtDuration(ticker.backlog)}</span>
+            {availability && <span className="text-fuchsia-300">⏱ ON-SUB BACKLOG {fmtDuration(ticker.backlog)}</span>}
             {ticker.leaders.map((mv) => (
               <span key={mv.id} className="text-slate-300">{mv.title} <span className="text-emerald-400">{mv.imdb_rating.toFixed(1)} ▲</span></span>
             ))}
@@ -87,7 +89,7 @@ function Ticker({ ticker }) {
 }
 
 /** Sticky top bar: brand, LIVE/DEMO badge, subscription matrix, ticker. */
-export function DashboardHeader({ source, subs, onToggleSub, onRetake, ticker }) {
+export function DashboardHeader({ source, subs, onToggleSub, onRetake, ticker, availability = true }) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-col gap-2.5 px-4 py-3">
@@ -122,46 +124,67 @@ export function DashboardHeader({ source, subs, onToggleSub, onRetake, ticker })
           })}
         </div>
       </div>
-      <Ticker ticker={ticker} />
+      <Ticker ticker={ticker} availability={availability} />
     </header>
   );
 }
 
-/** Smart filter bar. `f` = { onMySubs, freeOnly, imdb8, query, genre } and `set` = { ... } setters (see Dashboard). */
-export function FilterBar({ f, set, genresList, shown, total, hasRatings }) {
-  const active = f.query || f.genre || f.imdb8 || f.freeOnly || f.onMySubs;
+const SORT_LABELS = { popular: 'Most popular', rating: 'Highest IMDb', newest: 'Newest first', oldest: 'Oldest first', shortest: 'Shortest first', title: 'A → Z' };
+
+/** Smart filter bar. `f` = { onMySubs, freeOnly, imdb8, query, genre, industry, sort, hideWatched } and `set` = setters (see Dashboard). */
+export function FilterBar({ f, set, genresList, shown, total, hasRatings, availability = true, industries = {} }) {
+  const active = f.query || f.genre || f.imdb8 || f.freeOnly || f.onMySubs || f.industry || f.hideWatched;
+  const chip = (label, value) => (
+    <button key={label} type="button" aria-pressed={f.industry === value} onClick={() => set.industry(value)}
+      className={toggleBtn(f.industry === value, 'border-fuchsia-400 bg-fuchsia-400/15 text-fuchsia-100 shadow-[0_0_14px_-3px_rgba(232,121,249,.8)]')}>
+      {label}{value && industries[value] ? <span className="ml-1 font-mono text-[10px] opacity-60">{industries[value]}</span> : null}
+    </button>
+  );
+  const field = 'rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-cyan-400/60';
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2.5 backdrop-blur-md">
-        <button type="button" aria-pressed={f.onMySubs} onClick={() => set.onMySubs((v) => !v)} className={toggleBtn(f.onMySubs, 'border-emerald-400 bg-emerald-400/15 text-emerald-200 shadow-[0_0_14px_-3px_rgba(52,211,153,.8)]')}>
-          🟢 Included in My Subs
-        </button>
-        <button type="button" aria-pressed={f.freeOnly} onClick={() => set.freeOnly((v) => !v)} className={toggleBtn(f.freeOnly, 'border-sky-400 bg-sky-400/15 text-sky-200 shadow-[0_0_14px_-3px_rgba(56,189,248,.8)]')}>
-          🟦 Free to Watch in India
-        </button>
+        {Object.keys(industries).length > 1 && (
+          <>
+            {chip('All', '')}
+            {chip('🎬 Hollywood', 'Hollywood')}
+            {chip('🇮🇳 Bollywood', 'Bollywood')}
+            <span className="mx-1 hidden h-5 w-px bg-white/10 sm:block" />
+          </>
+        )}
+        {availability && (
+          <>
+            <button type="button" aria-pressed={f.onMySubs} onClick={() => set.onMySubs((v) => !v)} className={toggleBtn(f.onMySubs, 'border-emerald-400 bg-emerald-400/15 text-emerald-200 shadow-[0_0_14px_-3px_rgba(52,211,153,.8)]')}>
+              🟢 Included in My Subs
+            </button>
+            <button type="button" aria-pressed={f.freeOnly} onClick={() => set.freeOnly((v) => !v)} className={toggleBtn(f.freeOnly, 'border-sky-400 bg-sky-400/15 text-sky-200 shadow-[0_0_14px_-3px_rgba(56,189,248,.8)]')}>
+              🟦 Free to Watch in India
+            </button>
+          </>
+        )}
         <button type="button" aria-pressed={f.imdb8} onClick={() => set.imdb8((v) => !v)} className={toggleBtn(f.imdb8, 'border-yellow-400 bg-yellow-400/15 text-yellow-200 shadow-[0_0_14px_-3px_rgba(250,204,21,.8)]')}>
           🌟 IMDb 8.0+
         </button>
-        <span className="mx-1 hidden h-5 w-px bg-white/10 sm:block" />
-        <div className="relative min-w-[180px] flex-1">
+        <button type="button" aria-pressed={f.hideWatched} onClick={() => set.hideWatched((v) => !v)} className={toggleBtn(f.hideWatched, 'border-cyan-400 bg-cyan-400/15 text-cyan-100')}>
+          👁 Hide watched
+        </button>
+        <div className="relative min-w-[200px] flex-1 basis-full sm:basis-auto">
           <input
             type="search"
             value={f.query}
             onChange={(e) => set.query(e.target.value)}
-            placeholder="Search titles or genres…"
+            placeholder="Search title, genre, director or year…"
             aria-label="Search movies"
             className="w-full rounded-lg border border-white/10 bg-black/30 py-1.5 pl-8 pr-3 text-sm text-slate-100 placeholder-slate-500 outline-none transition-colors focus:border-cyan-400/60"
           />
           <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
         </div>
-        <select
-          value={f.genre}
-          onChange={(e) => set.genre(e.target.value)}
-          aria-label="Filter by genre"
-          className="rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 outline-none focus:border-cyan-400/60"
-        >
+        <select value={f.genre} onChange={(e) => set.genre(e.target.value)} aria-label="Filter by genre" className={field}>
           <option value="">All genres</option>
           {genresList.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
+        <select value={f.sort} onChange={(e) => set.sort(e.target.value)} aria-label="Sort movies" className={field}>
+          {Object.entries(SORT_LABELS).map(([k, v]) => <option key={k} value={k}>Sort: {v}</option>)}
         </select>
         {active && (
           <button onClick={set.reset} className="font-mono text-xs text-slate-500 hover:text-slate-200">

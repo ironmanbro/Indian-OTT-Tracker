@@ -10,7 +10,7 @@ import { LOG_EVENT, STORAGE_KEY } from './lib/constants.js';
 import { pickDiverseDeck } from './lib/deck.js';
 
 export default function App() {
-  const { movies, source, ready } = useCatalog();
+  const { movies, source, ready, attribution, availability } = useCatalog();
   const [stage, setStage] = useState('loading'); // loading → subs → swipe → dash
   const [subs, setSubs] = useState(() => new Set());
   const [log, setLog] = useState({}); // { [movieId]: { watched: true, rating: 1-5 } }
@@ -52,7 +52,7 @@ export default function App() {
   if (stage === 'loading') view = <Screen><div className="my-auto font-mono text-sm text-cyan-300/70">INITIALISING TERMINAL…</div></Screen>;
   else if (stage === 'subs') view = <SubsStep subs={subs} onToggle={toggleSub} onNext={startSwipe} />;
   else if (stage === 'swipe') view = <OnboardingDeck deck={deck} subs={subs} log={log} setLog={setLog} onDone={() => setStage('dash')} onBack={() => setStage('subs')} />;
-  else view = <Dashboard movies={movies} source={source} subs={subs} setSubs={setSubs} log={log} setLog={setLog} onRetake={() => setStage('subs')} />;
+  else view = <Dashboard movies={movies} source={source} attribution={attribution} availability={availability} subs={subs} setSubs={setSubs} log={log} setLog={setLog} onRetake={() => setStage('subs')} />;
 
   // opacity-only transition: no transform/filter, so position:fixed drawers inside keep working
   return (

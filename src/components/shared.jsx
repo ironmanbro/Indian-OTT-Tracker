@@ -43,8 +43,11 @@ export const ImdbBadge = memo(function ImdbBadge({ movie, className = '' }) {
   );
 });
 
-export const Badges = memo(function Badges({ access }) {
+export const Badges = memo(function Badges({ access, tracked = true }) {
   const tag = 'rounded px-1.5 py-0.5 font-mono text-[10px] font-medium ring-1';
+  if (!tracked || (!access.included.length && !access.free.length && !access.requires.length)) {
+    return <span className={`${tag} w-fit bg-slate-400/5 text-slate-500 ring-slate-400/20`}>Where to watch: check your apps</span>;
+  }
   return (
     <div className="flex flex-wrap gap-1">
       {access.isIncluded && (

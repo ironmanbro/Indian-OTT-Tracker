@@ -36,7 +36,7 @@ export function recommend(movies, log, accessMap, { genres, maxRuntime, accessOn
     if (mv.imdb_rating >= 7.5) reasons.push(`IMDb ${mv.imdb_rating.toFixed(1)}`);
     if (acc.isIncluded) reasons.push(`On your ${acc.included[0]}`);
     else if (acc.isFree) reasons.push(`Free on ${acc.free[0]}`);
-    else reasons.push(`Needs ${acc.requires[0]} sub`);
+    else if (acc.requires.length) reasons.push(`Needs ${acc.requires[0]} sub`);
 
     out.push({ movie: mv, score, pct: Math.round(score * 100), reasons });
   }

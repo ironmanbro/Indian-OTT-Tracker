@@ -14,20 +14,23 @@ import { pickDiverseDeck } from '../lib/deck.js';
 import { fmtDuration } from '../lib/format.js';
 import { recommend } from '../lib/recommend.js';
 
-export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake }) {
+export function Dashboard({ movies, source, attribution = '', availability = true, subs, setSubs, log, setLog, onRetake }) {
   // filters
   const [freeOnly, setFreeOnly] = useState(false);
   const [onMySubs, setOnMySubs] = useState(false);
   const [imdb8, setImdb8] = useState(false);
   const [query, setQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
+  const [industry, setIndustry] = useState(''); // '' | 'Hollywood' | 'Bollywood'
+  const [sort, setSort] = useState('popular'); // popular | rating | newest | oldest | shortest | title
+  const [hideWatched, setHideWatched] = useState(false);
   const deferredQuery = useDeferredValue(query); // typing stays instant while the chart re-filters
   const [limit, setLimit] = useState(40); // catalog cards rendered; "Load more" extends it
   // picker + drawer
   const [selectedId, setSelectedId] = useState(null);
   const [pickGenres, setPickGenres] = useState(() => new Set());
   const [maxRuntime, setMaxRuntime] = useState(0);
-  const [accessOnly, setAccessOnly] = useState(true);
+  const [accessOnly, setAccessOnly] = useState(availability);
   const [pickedId, setPickedId] = useState(null);
   const [skipped, setSkipped] = useState(() => new Set());
 
@@ -49,7 +52,7 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
   const changeAccessOnly = useCallback((v) => { setPickedId(null); setAccessOnly(v); }, []);
   const clearPicker = useCallback(() => { setPickedId(null); setPickGenres(new Set()); setMaxRuntime(0); setSkipped(new Set()); }, []);
   const resetSkipped = useCallback(() => setSkipped(new Set()), []);
-  const resetFilters = useCallback(() => { setQuery(''); setGenreFilter(''); setImdb8(false); setFreeOnly(false); setOnMySubs(false); }, []);
+  const resetFilters = useCallback(() => { setQuery(''); setGenreFilter(''); setImdb8(false); setFreeOnly(false); setOnMySubs(false); setIndustry(''); setHideWatched(false); }, []);
 
   // ── derived data ──
   const accessMap = useMemo(() => new Map(movies.map((mv) => [mv.id, getAccess(mv, subs)])), [movies, subs]); // subs only
@@ -58,18 +61,36 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
   const rec = useMovieRecommender(movies, log);
   const { similarity, whyFor, topFeatures } = rec;
 
+  const industries = useMemo(() => {
+    const c = {};
+    for (const mv of movies) if (mv.industry) c[mv.industry] = (c[mv.industry] || 0) + 1;
+    return c;
+  }, [movies]);
+
+  const SORTS = {
+    popular: null, // catalog order = most-voted first
+    rating: (a, b) => (b.imdb_rating || 0) - (a.imdb_rating || 0),
+    newest: (a, b) => (b.year || 0) - (a.year || 0),
+    oldest: (a, b) => (a.year || 9999) - (b.year || 9999),
+    shortest: (a, b) => a.runtime - b.runtime,
+    title: (a, b) => a.title.localeCompare(b.title),
+  };
+
   const visibleMovies = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
-    // search, genre and IMDb are AND filters; the two access toggles combine with OR ("watchable without extra cost")
-    return movies.filter((mv) => {
+    // search, genre, industry, IMDb and watched are AND filters; the two access toggles combine with OR ("watchable without extra cost")
+    const list = movies.filter((mv) => {
+      if (industry && mv.industry !== industry) return false;
       if (genreFilter && !mv.genres.includes(genreFilter)) return false;
       if (imdb8 && !(mv.imdb_rating >= 8)) return false;
-      if (q && !mv.title.toLowerCase().includes(q) && !mv.genres.some((g) => g.toLowerCase().includes(q))) return false;
+      if (hideWatched && log[mv.id]?.watched) return false;
+      if (q && !mv.title.toLowerCase().includes(q) && !mv.genres.some((g) => g.toLowerCase().includes(q)) && !(mv.director || '').toLowerCase().includes(q) && String(mv.year) !== q) return false;
       if (!freeOnly && !onMySubs) return true;
       const a = accessMap.get(mv.id);
       return (freeOnly && a.isFree) || (onMySubs && a.isIncluded);
     });
-  }, [movies, deferredQuery, genreFilter, imdb8, freeOnly, onMySubs, accessMap]);
+    return SORTS[sort] ? [...list].sort(SORTS[sort]) : list;
+  }, [movies, deferredQuery, genreFilter, industry, imdb8, hideWatched, log, freeOnly, onMySubs, accessMap, sort]);
   const visibleIds = useMemo(() => new Set(visibleMovies.map((x) => x.id)), [visibleMovies]);
 
   const stats = useMemo(() => {
@@ -106,7 +127,7 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
   }, [recs, pickedId]);
 
   // Graph set: a genre-diverse slice (≤ GRAPH_MAX) + anything you've watched, so a big catalog never explodes the graph
-  const baseGraph = useMemo(() => pickDiverseDeck(movies, GRAPH_MAX, 250), [movies]);
+  const baseGraph = useMemo(() => pickDiverseDeck(industry ? movies.filter((mv) => mv.industry === industry) : movies, GRAPH_MAX, 250), [movies, industry]);
   const extraKey = useMemo(() => {
     const inBase = new Set(baseGraph.map((x) => x.id));
     return movies.filter((mv) => log[mv.id]?.watched && !inBase.has(mv.id)).map((mv) => mv.id).join('|');
@@ -147,15 +168,15 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
         @media (prefers-reduced-motion: reduce) { .ott-twinkle, .ott-slide, .ott-pulse, .ott-marquee { animation: none; } }
       `}</style>
 
-      <DashboardHeader source={source} subs={subs} onToggleSub={toggleSub} onRetake={onRetake} ticker={ticker} />
+      <DashboardHeader source={source} subs={subs} onToggleSub={toggleSub} onRetake={onRetake} ticker={ticker} availability={availability} />
 
       <main className="mx-auto max-w-7xl space-y-4 px-4 py-4">
-        <Rise><HudStats stats={stats} total={movies.length} accessible={ticker.accessible} /></Rise>
+        <Rise><HudStats stats={stats} total={movies.length} accessible={ticker.accessible} availability={availability} /></Rise>
         <Rise delay={0.05}><ProfilePanel movies={movies} log={log} learned={topFeatures} /></Rise>
         <Rise delay={0.1}>
           <NextMoviePicker
             genresList={genresList} recs={recs} pickGenres={pickGenres} maxRuntime={maxRuntime} accessOnly={accessOnly}
-            pickedId={pickedId} criteriaActive={criteriaActive}
+            pickedId={pickedId} criteriaActive={criteriaActive} availability={availability}
             onToggleGenre={toggleGenre} onRuntime={changeRuntime} onAccessOnly={changeAccessOnly} onClear={clearPicker}
             onSurprise={surprise} onSkip={notInTheMood} skippedCount={skipped.size} onResetSkipped={resetSkipped}
             onOpen={setSelectedId} onMarkWatched={toggleWatched}
@@ -163,9 +184,9 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
         </Rise>
         <Rise delay={0.15}>
           <FilterBar
-            f={{ onMySubs, freeOnly, imdb8, query, genre: genreFilter }}
-            set={{ onMySubs: setOnMySubs, freeOnly: setFreeOnly, imdb8: setImdb8, query: setQuery, genre: setGenreFilter, reset: resetFilters }}
-            genresList={genresList} shown={visibleMovies.length} total={movies.length} hasRatings={hasRatings}
+            f={{ onMySubs, freeOnly, imdb8, query, genre: genreFilter, industry, sort, hideWatched }}
+            set={{ onMySubs: setOnMySubs, freeOnly: setFreeOnly, imdb8: setImdb8, query: setQuery, genre: setGenreFilter, industry: setIndustry, sort: setSort, hideWatched: setHideWatched, reset: resetFilters }}
+            genresList={genresList} shown={visibleMovies.length} total={movies.length} hasRatings={hasRatings} availability={availability} industries={industries}
           />
         </Rise>
 
@@ -182,10 +203,10 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
               </h2>
               <div className="grid max-h-[640px] gap-2 overflow-y-auto pr-1">
                 {visibleMovies.length === 0 && (
-                  <p className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">No matches. Add a subscription or relax the filters.</p>
+                  <p className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">No matches. Try clearing a filter — or <button onClick={resetFilters} className="text-cyan-300 underline">reset all filters</button>.</p>
                 )}
                 {visibleMovies.slice(0, limit).map((mv) => (
-                  <MovieCard key={mv.id} movie={mv} access={accessMap.get(mv.id)} entry={log[mv.id]} onToggleWatched={toggleWatched} onRate={rate} onOpen={setSelectedId} />
+                  <MovieCard key={mv.id} movie={mv} tracked={availability} access={accessMap.get(mv.id)} entry={log[mv.id]} onToggleWatched={toggleWatched} onRate={rate} onOpen={setSelectedId} />
                 ))}
                 {visibleMovies.length > limit && (
                   <button onClick={() => setLimit((n) => n + 40)} className="rounded-xl border border-white/10 py-2 font-mono text-xs text-cyan-300 hover:bg-white/5">
@@ -199,7 +220,9 @@ export function Dashboard({ movies, source, subs, setSubs, log, setLog, onRetake
       </main>
 
       <footer className="mx-auto max-w-7xl px-4 pb-8 pt-2 font-mono text-[10px] text-slate-600">
-        {source === 'tmdb'
+        {attribution
+          ? attribution
+          : source === 'tmdb'
           ? 'This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data provided by JustWatch.' + (hasRatings ? ' IMDb ratings from IMDb\'s non-commercial datasets.' : '')
           : 'Demo data — illustrative availability and approximate IMDb ratings, not live.'}
       </footer>

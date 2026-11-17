@@ -5,7 +5,7 @@ import { fmtDuration } from '../lib/format.js';
 import { RUNTIME_OPTIONS } from '../lib/recommend.js';
 
 export const NextMoviePicker = memo(function NextMoviePicker({
-  genresList, recs, pickGenres, maxRuntime, accessOnly, pickedId, criteriaActive,
+  genresList, recs, pickGenres, maxRuntime, accessOnly, pickedId, criteriaActive, availability = true,
   onToggleGenre, onRuntime, onAccessOnly, onClear, onSurprise, onSkip, skippedCount, onResetSkipped, onOpen, onMarkWatched,
 }) {
   const top = recs.slice(0, 3);
@@ -45,7 +45,7 @@ export const NextMoviePicker = memo(function NextMoviePicker({
             {o.label}
           </button>
         ))}
-        <label className="ml-auto flex cursor-pointer select-none items-center gap-1.5 text-xs text-zinc-300">
+        <label className={`ml-auto select-none items-center gap-1.5 text-xs text-zinc-300 cursor-pointer ${availability ? 'flex' : 'hidden'}`}>
           <input type="checkbox" checked={accessOnly} onChange={(e) => onAccessOnly(e.target.checked)} className="h-3.5 w-3.5 accent-amber-400" />
           Only what I can watch now
         </label>

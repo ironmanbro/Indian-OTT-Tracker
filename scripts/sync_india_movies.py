@@ -158,7 +158,7 @@ class Tmdb:
         return None
 
 
-def to_movie(d: dict):
+def to_movie(d: dict, languages=None, keep_unavailable=False):
     """TMDB details -> app movie dict, or None if it has no India streaming data."""
     rp = (d.get("watch/providers") or {}).get("results", {}).get(REGION) or {}
 
@@ -167,7 +167,9 @@ def to_movie(d: dict):
 
     flatrate = uniq(names("flatrate"))
     free = uniq(names("free") + names("ads"))  # "free" and "free with ads" both count as free
-    if not flatrate and not free:
+    if languages and d.get("original_language") not in languages:
+        return None  # e.g. --languages en,hi → Hollywood + Bollywood only
+    if not flatrate and not free and not keep_unavailable:
         return None  # rent/buy-only or unavailable in India
 
     genres = [g["name"] for g in d.get("genres", [])]
@@ -195,7 +197,7 @@ def to_movie(d: dict):
     }
 
 
-def enrich(ids, client: Tmdb, cache_path: str):
+def enrich(ids, client: Tmdb, cache_path: str, languages=None, keep_unavailable=False):
     """Fetch every id, resuming from a JSONL cache. Cache stores the final decision per id."""
     done = {}
     if os.path.exists(cache_path):
@@ -217,7 +219,7 @@ def enrich(ids, client: Tmdb, cache_path: str):
             if mid in done:
                 continue
             d = client.movie(mid)
-            movie = to_movie(d) if d else None
+            movie = to_movie(d, languages, keep_unavailable) if d else None
             done[mid] = movie
             cache.write(json.dumps({"id": mid, "movie": movie}, ensure_ascii=False) + "\n")
             cache.flush()
@@ -292,6 +294,8 @@ def main():
     ap.add_argument("--top", type=int, default=1000, help="how many most-popular movies to examine")
     ap.add_argument("--delay", type=float, default=0.1, help="seconds between API calls (TMDB allows ~50 req/s)")
     ap.add_argument("--out", default="public/india_movies.json", help="output file (default: public/india_movies.json, served by the site)")
+    ap.add_argument("--languages", default="", help="comma-separated TMDB original_language codes to keep, e.g. en,hi for Hollywood + Bollywood")
+    ap.add_argument("--keep-unavailable", action="store_true", help="keep movies with no India streaming listing (grows the catalog)")
     ap.add_argument("--no-imdb", action="store_true", help="skip joining IMDb ratings")
     args = ap.parse_args()
 
@@ -308,7 +312,10 @@ def main():
     os.makedirs(cache_dir, exist_ok=True)
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     cache_path = os.path.join(cache_dir, os.path.splitext(os.path.basename(args.out))[0] + ".cache.jsonl")
-    movies = enrich(ids, Tmdb(key, args.delay), cache_path)
+    langs = {x.strip() for x in args.languages.split(",") if x.strip()} or None
+    movies = enrich(ids, Tmdb(key, args.delay), cache_path, langs, args.keep_unavailable)
+    for m in movies:
+        m["industry"] = "Bollywood" if m.get("language") == "hi" else "Hollywood" if m.get("language") == "en" else None
 
     if not args.no_imdb:
         try:  # ratings are a nice-to-have: never fail the whole sync because of them

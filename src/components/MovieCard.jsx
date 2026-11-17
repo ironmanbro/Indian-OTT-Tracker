@@ -4,7 +4,7 @@ import { Badges, StarRating } from './shared.jsx';
 import { Poster } from './Poster.jsx';
 import { fmtDuration } from '../lib/format.js';
 
-export const MovieCard = memo(function MovieCard({ movie, access, entry, onToggleWatched, onRate, onOpen }) {
+export const MovieCard = memo(function MovieCard({ movie, tracked = true, access, entry, onToggleWatched, onRate, onOpen }) {
   const watched = !!entry?.watched;
   return (
     <article
@@ -22,12 +22,16 @@ export const MovieCard = memo(function MovieCard({ movie, access, entry, onToggl
       </button>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div>
-          <h3 className="truncate text-sm font-semibold text-slate-100">{movie.title}</h3>
+          <h3 className="truncate text-sm font-semibold text-slate-100">
+            {movie.title}
+            {movie.industry && <span className={`ml-2 rounded px-1 py-px align-middle font-mono text-[9px] font-medium ${movie.industry === 'Bollywood' ? 'bg-orange-400/15 text-orange-300' : 'bg-sky-400/15 text-sky-300'}`}>{movie.industry === 'Bollywood' ? 'BOLLYWOOD' : 'HOLLYWOOD'}</span>}
+          </h3>
+          {movie.director && <p className="truncate text-[11px] text-slate-500">Dir. {movie.director}</p>}
           <p className="font-mono text-[11px] text-slate-400">
-            {fmtDuration(movie.runtime)} · {movie.genres.join(' / ')}
+            {movie.year ? `${movie.year} · ` : ''}{fmtDuration(movie.runtime)} · {movie.genres.slice(0, 3).join(' / ')}
           </p>
         </div>
-        <Badges access={access} />
+        <Badges access={access} tracked={tracked} />
         <div className="mt-auto flex items-center justify-between gap-2">
           <label className="flex cursor-pointer select-none items-center gap-1.5 text-xs text-slate-300">
             <input
