@@ -25,12 +25,14 @@ cp .dev.vars.example .dev.vars     # put your TMDB key in .dev.vars (gitignored)
 npm run cf:dev                     # wrangler dev — static site + /api/movies on http://localhost:8787
 ```
 
-## Catalog: Hollywood + Bollywood (2,400+ movies)
-`public/india_movies.json` ships with ~1,800 Hollywood and ~650 Bollywood movies built **keyless** from IMDb's free datasets:
+## Catalog: Hollywood + Bollywood (2,400+ movies) — no API key needed
+`public/india_movies.json` is built from IMDb's free datasets; nothing in the project needs a key:
 ```bash
 python3 scripts/build_imdb_catalog.py     # downloads ~1.1 GB of IMDb TSVs to /tmp/imdb on first run, ~2 min
 ```
-Language is a heuristic (Bollywood = Hindi-cinema director list; Hollywood = English-titled originals) — see the script header. It has **no streaming availability or posters**; the UI then shows "Where to watch: check your apps" and hides the subscription filters. For exact language + India availability use TMDB: `python3 scripts/sync_india_movies.py --top 4000 --languages en,hi --keep-unavailable`, then `npm run posters -- --file public/india_movies.json` for posters.
+A GitHub Action rebuilds it weekly. Language is a heuristic (Bollywood = Hindi-cinema director list; Hollywood = English-titled originals) — see the script header. The catalog has **no streaming availability or posters** (neither is available keyless): cards say "Where to watch: check your apps", subscription filters are hidden, and posters show a title graphic.
+
+*Optional, needs a free TMDB key (not required):* `scripts/sync_india_movies.py` and `scripts/fetch_posters.py` add exact languages, India availability and posters.
 
 ## Data: three layers (the app tries them in order)
 1. **`/india_movies.json`** — static file in `public/` (thousands of movies **with IMDb ratings**), from `build_imdb_catalog.py` or `sync_india_movies.py`.

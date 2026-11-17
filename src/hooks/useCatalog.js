@@ -4,7 +4,7 @@ import { withPosters } from '../lib/poster.js';
 
 export const MOCK_MOVIES = withPosters(mock);
 
-/** Catalog loader: /india_movies.json (built catalog, IMDb ratings) → /api/movies (live TMDB, 24 titles) → bundled mock data. */
+/** Catalog loader: /india_movies.json (keyless IMDb-built catalog) → bundled mock data. */
 export function useCatalog() {
   const [state, setState] = useState({ movies: MOCK_MOVIES, source: 'demo', ready: false, attribution: '', availability: true });
 
@@ -18,9 +18,8 @@ export function useCatalog() {
       if (!Array.isArray(list) || list.length < 6) throw new Error('too few movies');
       return { list, attribution: data.attribution || '', availability: data.availability !== false };
     };
-    // the big static catalog first (hundreds/thousands of titles); the 24-title live API is only a fallback
+    // keyless: the static catalog built from IMDb datasets; bundled demo data if it is missing
     load('/india_movies.json')
-      .catch(() => load('/api/movies'))
       .then(({ list, attribution, availability }) => ({ movies: withPosters(list), source: 'tmdb', ready: true, attribution, availability }))
       .catch(() => ({ movies: MOCK_MOVIES, source: 'demo', ready: true, attribution: '', availability: true }))
       .then((st) => { if (!ctrl.signal.aborted) setState(st); });
